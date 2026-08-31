@@ -145,6 +145,15 @@
   }
   .modal-overlay.active .modal { transform: scale(1) translateY(0); }
 
+  .admin-input {
+    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--muted);
+    color: var(--accent); text-align: center; font-family: 'Cinzel', serif;
+    letter-spacing: 0.3em; padding: 14px; margin-bottom: 24px; font-size: 16px;
+    outline: none; transition: border 0.3s;
+  }
+  .admin-input:focus { border-color: var(--accent); }
+  .admin-input::placeholder { color: var(--muted); opacity: 0.5; letter-spacing: 0.3em; }
+
   .toast {
     position: fixed; bottom: 40px; left: 50%;
     transform: translateX(-50%) translateY(120px);
@@ -162,7 +171,7 @@
   .results-bar { height: 10px; background: rgba(255,255,255,0.04); overflow: hidden; position: relative; border: 1px solid rgba(201,169,97,0.1); }
   .results-fill {
     height: 100%; background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-bright));
-    width: 0%; transition: width 2s cubic-bezier(0.16,1,0.3,1); position: relative;
+    width: 0%; transition: width 1.5s cubic-bezier(0.16,1,0.3,1); position: relative;
   }
   .results-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4)); }
 
@@ -199,6 +208,29 @@
     font-family: 'Cinzel', serif; font-weight: 700;
     background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    transition: filter 0.3s;
+  }
+
+  .stat-flash { animation: statFlash 1s; }
+  @keyframes statFlash {
+    0% { filter: drop-shadow(0 0 20px rgba(232, 200, 122, 1)) brightness(1.8); }
+    100% { filter: drop-shadow(0 0 0px rgba(232, 200, 122, 0)) brightness(1); }
+  }
+
+  .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ff4136;
+    border-radius: 50%;
+    animation: livePulse 1.5s infinite;
+    box-shadow: 0 0 10px #ff4136;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
   }
 
   .section-divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 auto 40px; }
@@ -239,9 +271,14 @@
         <p class="text-[10px] tracking-[0.3em] text-[var(--muted)] mt-1">EST. MMXXV</p>
       </div>
     </div>
-    <button id="resultsBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
-      VIEW TALLY
-    </button>
+    <div class="flex gap-3 items-center">
+      <button id="resetGlobalBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-red-400 transition font-display border border-[rgba(201,169,97,0.2)] hover:border-red-400 px-4 py-2.5" style="display: none;">
+        RESET VOTE
+      </button>
+      <button id="adminBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
+        ADMIN ACCESS
+      </button>
+    </div>
   </header>
 
   <section class="relative z-10 min-h-[80vh] flex flex-col items-center justify-center px-6 py-20 text-center">
@@ -272,7 +309,7 @@
     <div class="already-voted-banner">
       <p class="font-display text-[var(--accent)] tracking-[0.3em] text-sm mb-2">YOUR VOTE HAS BEEN RECORDED</p>
       <p class="text-[var(--muted)] text-xs mb-4" id="votedBannerText">You cast your vote for —</p>
-      <button id="resetVoteBtn" class="vote-btn secondary" style="padding:10px 30px; font-size:11px;">RESET MY VOTE</button>
+      <button id="resetVoteBtn" class="vote-btn secondary" style="padding:10px 30px; font-size:11px;">RESET MY VOTE (TESTING)</button>
     </div>
   </div>
 
@@ -381,9 +418,12 @@
     </div>
   </section>
 
+  <!-- Results Section (Admin Only) -->
   <section id="resultsSection" class="relative z-10 px-6 md:px-12 py-20 max-w-5xl mx-auto" style="display:none;">
     <div class="text-center mb-16">
-      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3">LIVE TALLY</p>
+      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3 flex items-center justify-center">
+        <span class="live-dot"></span>LIVE ADMIN TALLY
+      </p>
       <h2 class="font-display text-3xl md:text-5xl mb-4">The People Have Spoken</h2>
       <div class="section-divider"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
       <p class="text-[var(--muted)] text-sm">Total votes cast: <span id="totalVotes" class="stat-num text-xl ml-1">0</span></p>
@@ -433,7 +473,7 @@
     <p class="text-[var(--muted)] text-[10px] tracking-[0.3em] mt-2 opacity-60">SEAL OF THE REPUBLIC · ELECTORAL DIVISION</p>
   </footer>
 
-  <!-- Confirm Modal -->
+  <!-- Vote Confirm Modal -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal">
       <div class="corner tl"></div><div class="corner tr"></div>
@@ -453,81 +493,104 @@
     </div>
   </div>
 
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <p class="font-display text-[var(--accent)] tracking-[0.4em] text-[10px] mb-4">ADMINISTRATOR ACCESS</p>
+      <div class="ornament-line w-20 mx-auto mb-6"></div>
+      <h3 class="font-display text-2xl mb-6 tracking-wider">ENTER PASSPHRASE</h3>
+      <input type="password" id="adminPass" class="admin-input" placeholder="••••••••">
+      <div class="flex gap-4 justify-center flex-wrap">
+        <button class="vote-btn secondary" id="cancelAdminBtn">CANCEL</button>
+        <button class="vote-btn" id="loginAdminBtn">AUTHORIZE</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script>
 (function() {
   'use strict';
 
-  // ===== Storage with fallback =====
-  const STORAGE_KEY = 'hc14_president_votes';
+  // ===== API Configuration =====
+  // Using counterapi.dev for reliable global syncing
+  const API_BASE = 'https://api.counterapi.dev/v1';
+  const NAMESPACE = 'high-court-14-election-v6';
+  
+  // ===== Local Storage Settings =====
   const VOTER_KEY = 'hc14_voter_id';
-
-  // In-memory fallback if localStorage is unavailable
-  let memVotes = { aga: 0, ali: 0 };
-  let memVote = null;
-  let storageAvailable = true;
-
-  try {
-    const test = '__test__';
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-  } catch(e) {
-    storageAvailable = false;
-    console.warn('localStorage unavailable, using in-memory fallback');
-  }
-
-  function getVotes() {
-    if (storageAvailable) {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (data) {
-          const parsed = JSON.parse(data);
-          return { aga: parsed.aga || 0, ali: parsed.ali || 0 };
-        }
-      } catch(e) { console.warn('Failed to read votes:', e); }
-      return { aga: 0, ali: 0 };
-    }
-    return { ...memVotes };
-  }
-
-  function saveVotes(votes) {
-    if (storageAvailable) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); }
-      catch(e) { console.warn('Failed to save votes:', e); memVotes = { ...votes }; }
-    } else {
-      memVotes = { ...votes };
-    }
-  }
+  
+  let pendingVote = null;
+  let counterAnimations = {};
+  let toastTimer;
+  let pollingInterval = null;
 
   function getMyVote() {
-    if (storageAvailable) {
-      try { return localStorage.getItem(VOTER_KEY); }
-      catch(e) { return memVote; }
-    }
-    return memVote;
+    try { return localStorage.getItem(VOTER_KEY); } catch(e) { return null; }
   }
 
   function markVoted(candidate) {
-    if (storageAvailable) {
-      try { localStorage.setItem(VOTER_KEY, candidate); }
-      catch(e) { memVote = candidate; }
-    } else {
-      memVote = candidate;
-    }
+    try { localStorage.setItem(VOTER_KEY, candidate); } catch(e) {}
   }
 
   function clearMyVote() {
-    if (storageAvailable) {
-      try { localStorage.removeItem(VOTER_KEY); }
-      catch(e) { memVote = null; }
-    } else {
-      memVote = null;
+    try { localStorage.removeItem(VOTER_KEY); } catch(e) {}
+  }
+
+  // ===== API Calls with Fallback =====
+  async function getVotes() {
+    try {
+      const [resAga, resAli] = await Promise.all([
+        fetch(`${API_BASE}/get/${NAMESPACE}/aga`),
+        fetch(`${API_BASE}/get/${NAMESPACE}/ali`)
+      ]);
+      const dataAga = resAga.ok ? await resAga.json() : { count: 0 };
+      const dataAli = resAli.ok ? await resAli.json() : { count: 0 };
+      return {
+        aga: dataAga.count || 0,
+        ali: dataAli.count || 0
+      };
+    } catch (e) {
+      console.warn('Live sync failed, using local fallback:', e);
+      return {
+        aga: parseInt(localStorage.getItem('local_aga') || '0'),
+        ali: parseInt(localStorage.getItem('local_ali') || '0')
+      };
     }
   }
 
-  // ===== State =====
-  let pendingVote = null;
+  async function castVoteAPI(candidate) {
+    try {
+      const res = await fetch(`${API_BASE}/up/${NAMESPACE}/${candidate}`);
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      return data.count || 0;
+    } catch (e) {
+      console.warn('Cast vote API failed, using local fallback:', e);
+      let localCount = parseInt(localStorage.getItem('local_' + candidate) || '0');
+      localCount++;
+      localStorage.setItem('local_' + candidate, localCount);
+      return localCount;
+    }
+  }
+
+  async function decrementVoteAPI(candidate) {
+    try {
+      const res = await fetch(`${API_BASE}/down/${NAMESPACE}/${candidate}`);
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      return data.count || 0;
+    } catch (e) {
+      console.warn('Decrement vote API failed, using local fallback:', e);
+      let localCount = parseInt(localStorage.getItem('local_' + candidate) || '0');
+      localCount = Math.max(0, localCount - 1);
+      localStorage.setItem('local_' + candidate, localCount);
+      return localCount;
+    }
+  }
 
   // ===== Particle System =====
   const canvas = document.getElementById('particles');
@@ -606,7 +669,6 @@
   }, 1500);
 
   // ===== Toast =====
-  var toastTimer;
   function showToast(msg) {
     var toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -626,24 +688,24 @@
     var btnAli = document.getElementById('voteBtnAli');
     var banner = document.getElementById('votedBanner');
     var bannerText = document.getElementById('votedBannerText');
+    var resetGlobalBtn = document.getElementById('resetGlobalBtn');
 
     if (myVote) {
-      // Lock both cards
       cardAga.classList.add('locked');
       cardAli.classList.add('locked');
-      // Disable both buttons
       btnAga.disabled = true;
       btnAli.disabled = true;
       btnAga.classList.remove('pulse');
       btnAli.classList.remove('pulse');
-      // Show stamp on voted card
+      
       cardAga.classList.remove('voted');
       cardAli.classList.remove('voted');
       stampAga.style.display = 'none';
       stampAli.style.display = 'none';
+      
       if (myVote === 'aga') {
         cardAga.classList.add('voted');
-        cardAga.classList.remove('locked'); // unlock voted card visually but button still disabled
+        cardAga.classList.remove('locked');
         stampAga.style.display = 'block';
         bannerText.innerHTML = 'You cast your vote for <span class="text-[var(--accent)] font-display tracking-wider">AGA MUSHAHID — THE MOUNTAIN</span>';
       } else if (myVote === 'ali') {
@@ -653,8 +715,8 @@
         bannerText.innerHTML = 'You cast your vote for <span class="text-[var(--accent)] font-display tracking-wider">MUHAMMAD ALI — THE ARROW</span>';
       }
       banner.style.display = 'block';
+      resetGlobalBtn.style.display = 'block';
     } else {
-      // Unlock everything
       cardAga.classList.remove('locked', 'voted');
       cardAli.classList.remove('locked', 'voted');
       stampAga.style.display = 'none';
@@ -664,6 +726,7 @@
       btnAga.classList.add('pulse');
       btnAli.classList.add('pulse');
       banner.style.display = 'none';
+      resetGlobalBtn.style.display = 'none';
     }
   }
 
@@ -672,7 +735,7 @@
     var existing = getMyVote();
     if (existing) {
       var name = existing === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
-      showToast('ALREADY VOTED FOR ' + name + ' — RESET TO CHANGE');
+      showToast('ALREADY VOTED FOR ' + name);
       return;
     }
     pendingVote = candidate;
@@ -721,64 +784,74 @@
     pendingVote = null;
   }
 
-  function castVote() {
-    if (!pendingVote) {
-      console.warn('castVote called but pendingVote is null');
-      return;
-    }
+  async function castVote() {
+    if (!pendingVote) return;
     var choice = pendingVote;
     pendingVote = null;
 
-    // Close modal first
     document.getElementById('confirmModal').classList.remove('active');
 
     // Cinematic flash
     var flash = document.getElementById('flash');
     flash.classList.remove('flash');
-    void flash.offsetWidth; // force reflow to restart animation
+    void flash.offsetWidth;
     flash.classList.add('flash');
     setTimeout(function() { flash.classList.remove('flash'); }, 1000);
 
-    // Record vote
-    var votes = getVotes();
-    votes[choice] = (votes[choice] || 0) + 1;
-    saveVotes(votes);
+    // Lock UI immediately
     markVoted(choice);
-
-    // Update UI to locked state
     updateVoteUI();
 
     var candidateName = choice === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
     showToast('VOTE CAST FOR ' + candidateName);
 
-    // Show results after a delay
-    setTimeout(function() { showResults(); }, 1400);
+    // Send to Global API
+    await castVoteAPI(choice);
+    
+    // If admin is viewing the tally, sync it immediately
+    if (document.getElementById('resultsSection').style.display === 'block') {
+      await syncVotes();
+    }
   }
 
-  // ===== Results =====
+  // ===== Admin Sync & Results =====
+  async function syncVotes() {
+    var votes = await getVotes();
+    updateTallyUI(votes);
+    updateResultsMessage(votes);
+  }
+
   function animateCounter(id, target) {
+    if (counterAnimations[id]) cancelAnimationFrame(counterAnimations[id]);
     var el = document.getElementById(id);
     if (!el) return;
-    var duration = 1200;
+    var start = parseInt(el.textContent) || 0;
+    
+    if (start !== target) {
+      el.classList.remove('stat-flash');
+      void el.offsetWidth;
+      el.classList.add('stat-flash');
+    }
+    
+    var duration = 800;
     var startTime = performance.now();
     function update(now) {
       var elapsed = now - startTime;
       var progress = Math.min(elapsed / duration, 1);
       var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(eased * target);
-      if (progress < 1) requestAnimationFrame(update);
-      else el.textContent = target;
+      el.textContent = Math.floor(start + (target - start) * eased);
+      if (progress < 1) {
+        counterAnimations[id] = requestAnimationFrame(update);
+      } else {
+        el.textContent = target;
+        delete counterAnimations[id];
+      }
     }
-    requestAnimationFrame(update);
+    counterAnimations[id] = requestAnimationFrame(update);
   }
 
-  function showResults() {
-    var section = document.getElementById('resultsSection');
-    section.style.display = 'block';
-
-    var votes = getVotes();
+  function updateTallyUI(votes) {
     var total = (votes.aga || 0) + (votes.ali || 0);
-
     animateCounter('totalVotes', total);
     animateCounter('agaCount', votes.aga || 0);
     animateCounter('aliCount', votes.ali || 0);
@@ -789,10 +862,8 @@
     document.getElementById('agaPercent').textContent = agaPercent.toFixed(1) + '%';
     document.getElementById('aliPercent').textContent = aliPercent.toFixed(1) + '%';
 
-    setTimeout(function() {
-      document.getElementById('agaBar').style.width = agaPercent + '%';
-      document.getElementById('aliBar').style.width = aliPercent + '%';
-    }, 300);
+    document.getElementById('agaBar').style.width = agaPercent + '%';
+    document.getElementById('aliBar').style.width = aliPercent + '%';
 
     var agaBadge = document.getElementById('agaWinner');
     var aliBadge = document.getElementById('aliWinner');
@@ -813,7 +884,10 @@
         aliBadge.style.display = 'inline-block';
       }
     }
+  }
 
+  function updateResultsMessage(votes) {
+    var total = (votes.aga || 0) + (votes.ali || 0);
     var msg = document.getElementById('resultsMessage');
     if (total === 0) {
       msg.textContent = 'The tally awaits the first voice.';
@@ -826,59 +900,91 @@
     } else {
       msg.textContent = 'A perfect equilibrium. The realm is divided equally.';
     }
+  }
 
-    setTimeout(function() {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  function openAdmin() {
+    document.getElementById('adminModal').classList.add('active');
+    setTimeout(() => document.getElementById('adminPass').focus(), 100);
+  }
+
+  function closeAdmin() {
+    document.getElementById('adminModal').classList.remove('active');
+    document.getElementById('adminPass').value = '';
+  }
+
+  function adminLogin() {
+    var pass = document.getElementById('adminPass').value;
+    if (pass === 'admin123') {
+      closeAdmin();
+      showToast('ACCESS GRANTED');
+      var section = document.getElementById('resultsSection');
+      section.style.display = 'block';
+      setTimeout(function() {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+      
+      // Start polling for live updates every 3 seconds
+      clearInterval(pollingInterval);
+      pollingInterval = setInterval(syncVotes, 3000);
+      syncVotes(); // immediate sync
+    } else {
+      showToast('ACCESS DENIED');
+      document.getElementById('adminPass').value = '';
+    }
   }
 
   // ===== Reset Vote =====
-  function resetVote() {
+  async function resetVote() {
     var myVote = getMyVote();
     if (!myVote) {
       showToast('NO VOTE TO RESET');
       return;
     }
-    var votes = getVotes();
-    if (votes[myVote] && votes[myVote] > 0) votes[myVote]--;
-    saveVotes(votes);
+    
+    showToast('RESETTING VOTE...');
+    await decrementVoteAPI(myVote);
+    
     clearMyVote();
     updateVoteUI();
     showToast('VOTE RESET — YOU MAY VOTE AGAIN');
-    setTimeout(function() { showResults(); }, 600);
+    
+    if (document.getElementById('resultsSection').style.display === 'block') {
+      await syncVotes();
+    }
   }
 
-  // ===== Event Listeners (using addEventListener, not inline onclick) =====
-  document.getElementById('voteBtnAga').addEventListener('click', function() {
-    openConfirm('aga');
-  });
-  document.getElementById('voteBtnAli').addEventListener('click', function() {
-    openConfirm('ali');
-  });
+  // ===== Event Listeners =====
+  document.getElementById('voteBtnAga').addEventListener('click', function() { openConfirm('aga'); });
+  document.getElementById('voteBtnAli').addEventListener('click', function() { openConfirm('ali'); });
   document.getElementById('cancelVoteBtn').addEventListener('click', closeConfirm);
   document.getElementById('confirmVoteBtn').addEventListener('click', castVote);
-  document.getElementById('resultsBtn').addEventListener('click', showResults);
   document.getElementById('resetVoteBtn').addEventListener('click', resetVote);
+  document.getElementById('resetGlobalBtn').addEventListener('click', resetVote);
+  
+  document.getElementById('adminBtn').addEventListener('click', openAdmin);
+  document.getElementById('cancelAdminBtn').addEventListener('click', closeAdmin);
+  document.getElementById('loginAdminBtn').addEventListener('click', adminLogin);
+  document.getElementById('adminPass').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') adminLogin();
+  });
 
-  // Close modal on overlay click
   document.getElementById('confirmModal').addEventListener('click', function(e) {
     if (e.target.id === 'confirmModal') closeConfirm();
   });
+  document.getElementById('adminModal').addEventListener('click', function(e) {
+    if (e.target.id === 'adminModal') closeAdmin();
+  });
 
-  // Close modal on Escape
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeConfirm();
+    if (e.key === 'Escape') {
+      closeConfirm();
+      closeAdmin();
+    }
   });
 
   // ===== Initialize on load =====
   updateVoteUI();
-
-  // If returning voter, show results after a moment
-  if (getMyVote()) {
-    setTimeout(function() { showResults(); }, 2000);
-  }
-
-  console.log('High Court 14 voting system initialized. Storage available:', storageAvailable);
+  console.log('High Court 14 voting system initialized.');
 })();
 </script>
 </body>
