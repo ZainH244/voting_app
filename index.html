@@ -131,6 +131,8 @@
   .vote-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--muted); color: var(--muted); }
   .vote-btn.secondary { border-color: var(--muted); color: var(--muted); }
   .vote-btn.secondary:hover { background: var(--muted); color: var(--bg); box-shadow: 0 0 30px rgba(138,126,107,0.4); }
+  .vote-btn.danger { border-color: #a83232; color: #e66767; }
+  .vote-btn.danger:hover { background: #a83232; color: #fff; box-shadow: 0 0 30px rgba(168,50,50,0.5); }
 
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
@@ -165,12 +167,6 @@
     width: 0%; transition: width 2s cubic-bezier(0.16,1,0.3,1); position: relative;
   }
   .results-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4)); }
-
-  .letter { display: inline-block; opacity: 0; transform: translateY(40px) rotateX(-90deg); animation: letterIn 1s forwards; transform-origin: 50% 100%; }
-  @keyframes letterIn { to { opacity: 1; transform: translateY(0) rotateX(0); } }
-
-  @keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(201,169,97,0.5)} 50%{box-shadow:0 0 0 16px rgba(201,169,97,0)} }
-  .pulse { animation: pulseGlow 2.5s infinite; }
 
   .cinematic-flash { position: fixed; inset: 0; background: white; z-index: 250; opacity: 0; pointer-events: none; }
   .cinematic-flash.flash { animation: flashEffect 1s; }
@@ -210,6 +206,13 @@
     border: 1px solid var(--accent); padding: 24px; text-align: center; margin-bottom: 40px;
   }
 
+  .admin-input {
+    background: rgba(0,0,0,0.6); border: 1px solid var(--border);
+    color: var(--fg); padding: 10px 16px; font-family: 'Outfit', sans-serif;
+    outline: none; transition: border-color 0.3s;
+  }
+  .admin-input:focus { border-color: var(--accent); }
+
   @media (max-width: 768px) {
     .hero-title { letter-spacing: 0.1em; }
     .modal { padding: 40px 24px; }
@@ -239,9 +242,14 @@
         <p class="text-[10px] tracking-[0.3em] text-[var(--muted)] mt-1">EST. MMXXV</p>
       </div>
     </div>
-    <button id="resultsBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
-      VIEW TALLY
-    </button>
+    <div class="flex gap-3">
+      <button id="resultsBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
+        VIEW TALLY
+      </button>
+      <button id="openAdminBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-3 py-2.5">
+        ⚙️
+      </button>
+    </div>
   </header>
 
   <section class="relative z-10 min-h-[80vh] flex flex-col items-center justify-center px-6 py-20 text-center">
@@ -267,7 +275,7 @@
     </p>
   </section>
 
-  <!-- Already voted banner (hidden by default) -->
+  <!-- Already voted banner -->
   <div class="relative z-10 px-6 md:px-12 max-w-5xl mx-auto" id="votedBanner" style="display:none;">
     <div class="already-voted-banner">
       <p class="font-display text-[var(--accent)] tracking-[0.3em] text-sm mb-2">YOUR VOTE HAS BEEN RECORDED</p>
@@ -314,12 +322,7 @@
             <path d="M 5 175 L 80 45 L 115 105 L 145 65 L 195 175 Z" fill="url(#mountainGrad)"/>
             <path d="M 80 45 L 95 70 L 88 78 L 80 70 L 72 78 L 65 70 Z" fill="url(#snowGrad)"/>
             <path d="M 145 65 L 158 88 L 152 95 L 145 88 L 138 95 L 132 88 Z" fill="url(#snowGrad)"/>
-            <path d="M 80 45 L 115 105" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" fill="none"/>
-            <path d="M 115 105 L 145 65" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" fill="none"/>
             <line x1="0" y1="175" x2="200" y2="175" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
-            <circle cx="30" cy="30" r="1" fill="var(--accent)" opacity="0.6"/>
-            <circle cx="170" cy="25" r="0.8" fill="var(--accent)" opacity="0.5"/>
-            <circle cx="100" cy="15" r="1.2" fill="var(--accent)" opacity="0.7"/>
           </svg>
         </div>
         <p class="text-center text-[var(--muted)] text-sm leading-relaxed mb-8 italic font-light px-4">
@@ -352,23 +355,9 @@
                 <stop offset="0%" stop-color="#c9a961"/><stop offset="100%" stop-color="#f5f0e6"/>
               </linearGradient>
             </defs>
-            <path d="M 20 100 Q 100 20 180 100" fill="none" stroke="var(--accent)" stroke-width="0.5" opacity="0.2" stroke-dasharray="2 4"/>
             <rect x="25" y="96" width="135" height="8" fill="url(#arrowGrad)"/>
-            <line x1="40" y1="98" x2="155" y2="98" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
-            <line x1="40" y1="102" x2="155" y2="102" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
             <path d="M 160 75 L 195 100 L 160 125 Z" fill="url(#arrowHeadGrad)"/>
-            <path d="M 160 75 L 195 100 L 160 100 Z" fill="rgba(255,255,255,0.15)"/>
             <path d="M 25 100 L 5 75 L 15 100 L 5 125 Z" fill="url(#arrowGrad)"/>
-            <path d="M 25 100 L 5 75 L 15 100 Z" fill="rgba(0,0,0,0.2)"/>
-            <line x1="10" y1="85" x2="22" y2="100" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>
-            <line x1="10" y1="115" x2="22" y2="100" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>
-            <rect x="50" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
-            <rect x="80" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
-            <rect x="110" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
-            <rect x="140" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
-            <line x1="195" y1="100" x2="200" y2="100" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
-            <line x1="190" y1="85" x2="198" y2="85" stroke="var(--accent)" stroke-width="0.5" opacity="0.3"/>
-            <line x1="190" y1="115" x2="198" y2="115" stroke="var(--accent)" stroke-width="0.5" opacity="0.3"/>
           </svg>
         </div>
         <p class="text-center text-[var(--muted)] text-sm leading-relaxed mb-8 italic font-light px-4">
@@ -453,15 +442,63 @@
     </div>
   </div>
 
+  <!-- Admin Modal -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal" style="max-width: 600px;">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <p class="font-display text-[var(--accent)] tracking-[0.4em] text-[10px] mb-2">HIGH COURT ELECTORAL COMMISSION</p>
+      <h3 class="font-display text-2xl mb-4 tracking-wider">ADMIN CONTROL PANEL</h3>
+      <div class="ornament-line w-20 mx-auto mb-6"></div>
+
+      <!-- Passcode Screen -->
+      <div id="adminAuth">
+        <p class="text-[var(--muted)] text-xs mb-4">Enter Master Passcode to access electoral controls</p>
+        <input type="password" id="adminPasscode" class="admin-input text-center w-full max-w-xs mb-4" placeholder="••••••••">
+        <div class="flex gap-3 justify-center">
+          <button class="vote-btn secondary" id="closeAdminBtn" style="padding:10px 24px; font-size:11px;">CANCEL</button>
+          <button class="vote-btn" id="loginAdminBtn" style="padding:10px 24px; font-size:11px;">ACCESS</button>
+        </div>
+      </div>
+
+      <!-- Controls Screen -->
+      <div id="adminPanel" style="display:none;">
+        <div class="space-y-6 text-left border-t border-b border-[rgba(201,169,97,0.15)] py-6 my-6">
+          <div>
+            <p class="font-display text-xs text-[var(--accent)] tracking-widest mb-3">OVERRIDE VOTE COUNTS</p>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-[10px] text-[var(--muted)] block mb-1">AGA MUSHAHID</label>
+                <input type="number" min="0" id="adminAgaCount" class="admin-input w-full text-center">
+              </div>
+              <div>
+                <label class="text-[10px] text-[var(--muted)] block mb-1">MUHAMMAD ALI</label>
+                <input type="number" min="0" id="adminAliCount" class="admin-input w-full text-center">
+              </div>
+            </div>
+            <button class="vote-btn w-full mt-3" id="saveCountsBtn" style="padding:10px; font-size:11px;">UPDATE COUNTS</button>
+          </div>
+
+          <div class="pt-4 border-t border-[rgba(201,169,97,0.1)]">
+            <p class="font-display text-xs text-[rgba(230,103,103,0.9)] tracking-widest mb-2">DANGER ZONE</p>
+            <button class="vote-btn danger w-full" id="resetAllVotesBtn" style="padding:10px; font-size:11px;">ZERO ALL VOTES (RESET ELECTION)</button>
+          </div>
+        </div>
+
+        <button class="vote-btn secondary" id="exitAdminBtn" style="padding:10px 24px; font-size:11px;">EXIT PANEL</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <!-- Firebase Modular SDK Setup -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // TODO: Paste your actual Firebase configuration values here from Firebase Console Settings
- const firebaseConfig = {
+  // TODO: Replace with your actual Firebase config keys
+  const firebaseConfig = {
   apiKey: "AIzaSyDP75xgDA5JwVcQ7WpuMZZ4DnXbf3EMyv4",
   authDomain: "high-court-14.firebaseapp.com",
   projectId: "high-court-14",
@@ -469,6 +506,7 @@
   messagingSenderId: "2475592724",
   appId: "1:2475592724:web:1c6ce839a24c531fbd2b01"
 };
+  const ADMIN_PASSCODE = "1414"; // Default admin passcode
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -478,7 +516,6 @@
   let pendingVote = null;
   let liveVotes = { aga: 0, ali: 0 };
 
-  // Track single vote locally per user
   function getMyVote() {
     try { return localStorage.getItem(VOTER_KEY); } catch(e) { return null; }
   }
@@ -491,21 +528,23 @@
     try { localStorage.removeItem(VOTER_KEY); } catch(e) {}
   }
 
-  // Realtime Listener for Cloud Firestore
+  // Realtime Listener with negative protection
   onSnapshot(votesDocRef, async (docSnap) => {
     if (!docSnap.exists()) {
-      // Initialize document if it doesn't exist yet
       await setDoc(votesDocRef, { aga: 0, ali: 0 });
     } else {
       const data = docSnap.data();
-      liveVotes = { aga: data.aga || 0, ali: data.ali || 0 };
+      // Ensure local state never goes negative
+      liveVotes = { 
+        aga: Math.max(0, Number(data.aga) || 0), 
+        ali: Math.max(0, Number(data.ali) || 0) 
+      };
       updateResultsDisplay(liveVotes);
     }
   }, (error) => {
     console.error("Firestore Listener Error:", error);
   });
 
-  // UI Updates for Voting Buttons and Banners
   function updateVoteUI() {
     const myVote = getMyVote();
     const cardAga = document.getElementById('card-aga');
@@ -554,7 +593,6 @@
     }
   }
 
-  // Confirm Modal
   function openConfirm(candidate) {
     const existing = getMyVote();
     if (existing) {
@@ -575,8 +613,6 @@
         '<svg viewBox="0 0 200 200" width="140" height="140" class="mx-auto">' +
         '<defs><linearGradient id="mGrad2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e8c87a"/><stop offset="100%" stop-color="#6b5430"/></linearGradient><linearGradient id="snow2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f5f0e6"/><stop offset="100%" stop-color="#c9a961"/></linearGradient></defs>' +
         '<path d="M 5 175 L 80 45 L 115 105 L 145 65 L 195 175 Z" fill="url(#mGrad2)"/>' +
-        '<path d="M 80 45 L 95 70 L 80 70 L 72 78 L 65 70 Z" fill="url(#snow2)"/>' +
-        '<path d="M 145 65 L 158 88 L 145 88 L 132 88 Z" fill="url(#snow2)"/>' +
         '</svg>';
     } else {
       nameEl.textContent = 'MUHAMMAD ALI';
@@ -586,7 +622,6 @@
         '<defs><linearGradient id="aGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6b5430"/><stop offset="100%" stop-color="#e8c87a"/></linearGradient></defs>' +
         '<rect x="25" y="96" width="135" height="8" fill="url(#aGrad2)"/>' +
         '<path d="M 160 75 L 195 100 L 160 125 Z" fill="url(#aGrad2)"/>' +
-        '<path d="M 25 100 L 5 75 L 15 100 L 5 125 Z" fill="url(#aGrad2)"/>' +
         '</svg>';
     }
     modal.classList.add('active');
@@ -597,7 +632,6 @@
     pendingVote = null;
   }
 
-  // Increment vote in Firestore
   async function castVote() {
     if (!pendingVote) return;
     const choice = pendingVote;
@@ -612,7 +646,6 @@
     setTimeout(() => { flash.classList.remove('flash'); }, 1000);
 
     try {
-      // Update real-time Firestore database using atomic increment
       await updateDoc(votesDocRef, {
         [choice]: increment(1)
       });
@@ -622,15 +655,14 @@
 
       const candidateName = choice === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
       showToast('VOTE CAST FOR ' + candidateName);
-
       setTimeout(() => { showResults(); }, 1400);
     } catch (e) {
-      console.error("Error writing vote to Firebase:", e);
+      console.error("Error writing vote:", e);
       showToast("FAILED TO RECORD VOTE. TRY AGAIN.");
     }
   }
 
-  // Decrement vote in Firestore
+  // Safe decrement using transaction to prevent dropping below zero
   async function resetVote() {
     const myVote = getMyVote();
     if (!myVote) {
@@ -639,8 +671,13 @@
     }
 
     try {
-      await updateDoc(votesDocRef, {
-        [myVote]: increment(-1)
+      await runTransaction(db, async (transaction) => {
+        const sfDoc = await transaction.get(votesDocRef);
+        if (!sfDoc.exists()) return;
+        
+        const currentCount = sfDoc.data()[myVote] || 0;
+        const newCount = Math.max(0, currentCount - 1);
+        transaction.update(votesDocRef, { [myVote]: newCount });
       });
 
       clearMyVote();
@@ -648,12 +685,11 @@
       showToast('VOTE RESET — YOU MAY VOTE AGAIN');
       setTimeout(() => { showResults(); }, 600);
     } catch (e) {
-      console.error("Error resetting vote on Firebase:", e);
+      console.error("Error resetting vote:", e);
       showToast("FAILED TO RESET VOTE.");
     }
   }
 
-  // Visual Counter animation
   function animateCounter(id, target) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -663,22 +699,24 @@
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(eased * target);
+      el.textContent = Math.max(0, Math.floor(eased * target));
       if (progress < 1) requestAnimationFrame(update);
-      else el.textContent = target;
+      else el.textContent = Math.max(0, target);
     }
     requestAnimationFrame(update);
   }
 
   function updateResultsDisplay(votes) {
-    const total = (votes.aga || 0) + (votes.ali || 0);
+    const agaVotes = Math.max(0, votes.aga || 0);
+    const aliVotes = Math.max(0, votes.ali || 0);
+    const total = agaVotes + aliVotes;
 
     animateCounter('totalVotes', total);
-    animateCounter('agaCount', votes.aga || 0);
-    animateCounter('aliCount', votes.ali || 0);
+    animateCounter('agaCount', agaVotes);
+    animateCounter('aliCount', aliVotes);
 
-    const agaPercent = total > 0 ? (votes.aga / total * 100) : 0;
-    const aliPercent = total > 0 ? (votes.ali / total * 100) : 0;
+    const agaPercent = total > 0 ? (agaVotes / total * 100) : 0;
+    const aliPercent = total > 0 ? (aliVotes / total * 100) : 0;
 
     document.getElementById('agaPercent').textContent = agaPercent.toFixed(1) + '%';
     document.getElementById('aliPercent').textContent = aliPercent.toFixed(1) + '%';
@@ -692,10 +730,10 @@
     aliBadge.style.display = 'none';
 
     if (total > 0) {
-      if (votes.aga > votes.ali) {
+      if (agaVotes > aliVotes) {
         agaBadge.textContent = 'LEADING';
         agaBadge.style.display = 'inline-block';
-      } else if (votes.ali > votes.aga) {
+      } else if (aliVotes > agaVotes) {
         aliBadge.textContent = 'LEADING';
         aliBadge.style.display = 'inline-block';
       } else {
@@ -709,11 +747,11 @@
     const msg = document.getElementById('resultsMessage');
     if (total === 0) {
       msg.textContent = 'The tally awaits the first voice.';
-    } else if (votes.aga > votes.ali) {
-      const diff = votes.aga - votes.ali;
+    } else if (agaVotes > aliVotes) {
+      const diff = agaVotes - aliVotes;
       msg.textContent = 'The Mountain stands tall — Aga Mushahid leads by ' + diff + ' vote' + (diff !== 1 ? 's' : '') + '.';
-    } else if (votes.ali > votes.aga) {
-      const diff2 = votes.ali - votes.aga;
+    } else if (aliVotes > agaVotes) {
+      const diff2 = aliVotes - agaVotes;
       msg.textContent = 'The Arrow flies true — Muhammad Ali leads by ' + diff2 + ' vote' + (diff2 !== 1 ? 's' : '') + '.';
     } else {
       msg.textContent = 'A perfect equilibrium. The realm is divided equally.';
@@ -727,6 +765,63 @@
     setTimeout(() => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+  }
+
+  // ADMIN SECTION LOGIC
+  const adminModal = document.getElementById('adminModal');
+  const adminAuth = document.getElementById('adminAuth');
+  const adminPanel = document.getElementById('adminPanel');
+  const adminPasscode = document.getElementById('adminPasscode');
+
+  function openAdmin() {
+    adminPasscode.value = '';
+    adminAuth.style.display = 'block';
+    adminPanel.style.display = 'none';
+    adminModal.classList.add('active');
+  }
+
+  function closeAdmin() {
+    adminModal.classList.remove('active');
+  }
+
+  function loginAdmin() {
+    if (adminPasscode.value === ADMIN_PASSCODE) {
+      adminAuth.style.display = 'none';
+      adminPanel.style.display = 'block';
+      document.getElementById('adminAgaCount').value = liveVotes.aga;
+      document.getElementById('adminAliCount').value = liveVotes.ali;
+    } else {
+      showToast('INVALID ADMIN PASSCODE');
+    }
+  }
+
+  async function saveAdminCounts() {
+    const newAga = Math.max(0, parseInt(document.getElementById('adminAgaCount').value) || 0);
+    const newAli = Math.max(0, parseInt(document.getElementById('adminAliCount').value) || 0);
+
+    try {
+      await setDoc(votesDocRef, { aga: newAga, ali: newAli });
+      showToast('ELECTION COUNTS OVERRIDDEN');
+      closeAdmin();
+    } catch (e) {
+      console.error("Admin save error:", e);
+      showToast('FAILED TO UPDATE COUNTS');
+    }
+  }
+
+  async function resetAllVotes() {
+    if (confirm("ARE YOU SURE? This will set all votes to 0 across the entire database.")) {
+      try {
+        await setDoc(votesDocRef, { aga: 0, ali: 0 });
+        clearMyVote();
+        updateVoteUI();
+        showToast('ELECTION HAS BEEN RESET TO ZERO');
+        closeAdmin();
+      } catch (e) {
+        console.error("Admin reset error:", e);
+        showToast('FAILED TO RESET ELECTION');
+      }
+    }
   }
 
   // Toast System
@@ -808,15 +903,25 @@
   document.getElementById('resultsBtn').addEventListener('click', showResults);
   document.getElementById('resetVoteBtn').addEventListener('click', resetVote);
 
+  // Admin Listeners
+  document.getElementById('openAdminBtn').addEventListener('click', openAdmin);
+  document.getElementById('closeAdminBtn').addEventListener('click', closeAdmin);
+  document.getElementById('exitAdminBtn').addEventListener('click', closeAdmin);
+  document.getElementById('loginAdminBtn').addEventListener('click', loginAdmin);
+  document.getElementById('saveCountsBtn').addEventListener('click', saveAdminCounts);
+  document.getElementById('resetAllVotesBtn').addEventListener('click', resetAllVotes);
+
   document.getElementById('confirmModal').addEventListener('click', (e) => {
     if (e.target.id === 'confirmModal') closeConfirm();
   });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeConfirm();
+  document.getElementById('adminModal').addEventListener('click', (e) => {
+    if (e.target.id === 'adminModal') closeAdmin();
   });
 
-  // Startup Setup
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeConfirm(); closeAdmin(); }
+  });
+
   updateVoteUI();
   if (getMyVote()) {
     setTimeout(() => { showResults(); }, 2000);
