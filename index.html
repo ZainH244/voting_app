@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIGH COURT 14: PRESIDENT SELECTION</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0908;
+    --bg-2: #14110f;
+    --bg-3: #1c1814;
+    --fg: #f5f0e6;
+    --muted: #8a7e6b;
+    --accent: #c9a961;
+    --accent-bright: #e8c87a;
+    --accent-deep: #8a6f3a;
+    --crimson: #6b1818;
+    --border: rgba(201, 169, 97, 0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--fg);
+    font-family: 'Outfit', sans-serif;
+    overflow-x: hidden; min-height: 100vh;
+  }
+  .font-display { font-family: 'Cinzel', serif; }
+
+  .cinematic-bg {
+    position: fixed; inset: 0; z-index: -3;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(107,24,24,0.18), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,169,97,0.12), transparent 60%),
+      radial-gradient(ellipse at center, #14110f 0%, #0a0908 75%);
+  }
+  .light-beam {
+    position: fixed; top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 80vw; height: 100vh;
+    background: radial-gradient(ellipse at center top, rgba(201,169,97,0.08), transparent 50%);
+    z-index: -2; pointer-events: none;
+    animation: beamPulse 8s ease-in-out infinite;
+  }
+  @keyframes beamPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    opacity: 0.07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 99;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.7) 100%);
+  }
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 98; opacity: 0.035;
+    background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.6) 2px, rgba(255,255,255,0.6) 3px);
+  }
+  #particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+  .hero-title {
+    font-family: 'Cinzel', serif; font-weight: 900; letter-spacing: 0.18em;
+    background: linear-gradient(180deg, #f5f0e6 0%, #e8c87a 45%, #c9a961 60%, #8a6f3a 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(201,169,97,0.25));
+  }
+
+  .candidate-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(28,24,20,0.85), rgba(10,9,8,0.95));
+    border: 1px solid var(--border); backdrop-filter: blur(10px);
+    transition: all 0.7s cubic-bezier(0.16,1,0.3,1); overflow: hidden;
+  }
+  .candidate-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(201,169,97,0.06));
+    opacity: 0; transition: opacity 0.7s; pointer-events: none;
+  }
+  .candidate-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.4;
+  }
+  .candidate-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(201,169,97,0.45);
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 0 80px -10px rgba(201,169,97,0.25);
+  }
+  .candidate-card:hover::before { opacity: 1; }
+  .candidate-card.voted {
+    border-color: var(--accent);
+    box-shadow: 0 0 60px -10px rgba(201,169,97,0.4);
+  }
+  .candidate-card.locked { opacity: 0.55; pointer-events: none; }
+  .candidate-card.locked .vote-btn { cursor: not-allowed; }
+
+  .corner { position: absolute; width: 24px; height: 24px; border: 1px solid var(--accent); opacity: 0.5; }
+  .corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+  .corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+  .corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+  .corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+  .symbol-container { position: relative; width: 200px; height: 200px; margin: 0 auto; }
+  .symbol-glow {
+    position: absolute; inset: -30px;
+    background: radial-gradient(circle, rgba(201,169,97,0.35), transparent 65%);
+    filter: blur(25px); opacity: 0; transition: opacity 1s;
+  }
+  .candidate-card:hover .symbol-glow { opacity: 1; }
+  .symbol-svg { transition: transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .candidate-card:hover .symbol-svg { transform: scale(1.08); }
+
+  .vote-btn {
+    position: relative; background: transparent; border: 1px solid var(--accent);
+    color: var(--accent); padding: 14px 44px; font-family: 'Cinzel', serif;
+    letter-spacing: 0.35em; font-weight: 600; font-size: 13px; cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.16,1,0.3,1); overflow: hidden; text-transform: uppercase;
+  }
+  .vote-btn::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(232,200,122,0.4), transparent);
+    transition: left 0.7s;
+  }
+  .vote-btn:hover:not(:disabled) {
+    background: var(--accent); color: var(--bg);
+    box-shadow: 0 0 50px rgba(201,169,97,0.5); letter-spacing: 0.4em;
+  }
+  .vote-btn:hover:not(:disabled)::before { left: 100%; }
+  .vote-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--muted); color: var(--muted); }
+  .vote-btn.secondary { border-color: var(--muted); color: var(--muted); }
+  .vote-btn.secondary:hover { background: var(--muted); color: var(--bg); box-shadow: 0 0 30px rgba(138,126,107,0.4); }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.5s;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: linear-gradient(180deg, #1c1814, #0a0908); border: 1px solid var(--border);
+    padding: 60px 50px; max-width: 520px; width: 90%; text-align: center;
+    transform: scale(0.92) translateY(20px); transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); position: relative;
+  }
+  .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+
+  .toast {
+    position: fixed; bottom: 40px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: linear-gradient(180deg, #1c1814, #0a0908); border: 1px solid var(--accent);
+    padding: 18px 36px; color: var(--accent); font-family: 'Cinzel', serif;
+    letter-spacing: 0.25em; font-size: 12px; z-index: 300;
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(201,169,97,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 1.2s, transform 1.2s; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  .results-bar { height: 10px; background: rgba(255,255,255,0.04); overflow: hidden; position: relative; border: 1px solid rgba(201,169,97,0.1); }
+  .results-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-bright));
+    width: 0%; transition: width 2s cubic-bezier(0.16,1,0.3,1); position: relative;
+  }
+  .results-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4)); }
+
+  .letter { display: inline-block; opacity: 0; transform: translateY(40px) rotateX(-90deg); animation: letterIn 1s forwards; transform-origin: 50% 100%; }
+  @keyframes letterIn { to { opacity: 1; transform: translateY(0) rotateX(0); } }
+
+  @keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(201,169,97,0.5)} 50%{box-shadow:0 0 0 16px rgba(201,169,97,0)} }
+  .pulse { animation: pulseGlow 2.5s infinite; }
+
+  .cinematic-flash { position: fixed; inset: 0; background: white; z-index: 250; opacity: 0; pointer-events: none; }
+  .cinematic-flash.flash { animation: flashEffect 1s; }
+  @keyframes flashEffect { 0%{opacity:0} 15%{opacity:0.95} 100%{opacity:0} }
+
+  .ornament-line { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .ornament-diamond { width: 8px; height: 8px; background: var(--accent); transform: rotate(45deg); display: inline-block; margin: 0 12px; opacity: 0.6; }
+
+  .seal { width: 120px; height: 120px; margin: 0 auto; position: relative; animation: sealRotate 60s linear infinite; }
+  @keyframes sealRotate { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  .winner-badge {
+    background: linear-gradient(135deg, var(--accent-deep), var(--accent-bright)); color: var(--bg);
+    padding: 6px 16px; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.3em;
+    font-weight: 700; display: inline-block; box-shadow: 0 0 30px rgba(201,169,97,0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+  @keyframes badgePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+  .voted-stamp {
+    position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--bg);
+    padding: 4px 12px; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.25em; font-weight: 700; z-index: 5;
+  }
+
+  .stat-num {
+    font-family: 'Cinzel', serif; font-weight: 700;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .section-divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 auto 40px; }
+  .section-divider .line { flex: 0 0 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent)); }
+  .section-divider .line.right { background: linear-gradient(90deg, var(--accent), transparent); }
+
+  .already-voted-banner {
+    background: linear-gradient(135deg, rgba(107,24,24,0.3), rgba(201,169,97,0.15));
+    border: 1px solid var(--accent); padding: 24px; text-align: center; margin-bottom: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title { letter-spacing: 0.1em; }
+    .modal { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+  <div class="cinematic-bg"></div>
+  <div class="light-beam"></div>
+  <canvas id="particles"></canvas>
+  <div class="scanlines"></div>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+  <div class="cinematic-flash" id="flash"></div>
+
+  <header class="relative z-10 px-6 md:px-12 py-6 flex justify-between items-center border-b border-[rgba(201,169,97,0.15)]">
+    <div class="flex items-center gap-3">
+      <svg width="34" height="34" viewBox="0 0 32 32" class="text-[var(--accent)]">
+        <path d="M16 2 L28 10 L28 13 L4 13 L4 10 Z" fill="currentColor" opacity="0.9"/>
+        <rect x="6" y="15" width="2.5" height="12" fill="currentColor" opacity="0.7"/>
+        <rect x="14.75" y="15" width="2.5" height="12" fill="currentColor" opacity="0.7"/>
+        <rect x="23.5" y="15" width="2.5" height="12" fill="currentColor" opacity="0.7"/>
+        <rect x="2" y="28" width="28" height="2" fill="currentColor"/>
+      </svg>
+      <div>
+        <p class="font-display tracking-[0.3em] text-sm text-[var(--accent)] leading-none">HIGH COURT 14</p>
+        <p class="text-[10px] tracking-[0.3em] text-[var(--muted)] mt-1">EST. MMXXV</p>
+      </div>
+    </div>
+    <button id="resultsBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
+      VIEW TALLY
+    </button>
+  </header>
+
+  <section class="relative z-10 min-h-[80vh] flex flex-col items-center justify-center px-6 py-20 text-center">
+    <div class="seal mb-12 reveal" id="seal">
+      <svg viewBox="0 0 120 120" class="w-full h-full">
+        <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(201,169,97,0.4)" stroke-width="1"/>
+        <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(201,169,97,0.3)" stroke-width="1" stroke-dasharray="2 4"/>
+        <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(201,169,97,0.2)" stroke-width="1"/>
+        <path d="M 60 35 L 75 60 L 60 85 L 45 60 Z" fill="none" stroke="var(--accent)" stroke-width="1"/>
+        <circle cx="60" cy="60" r="6" fill="var(--accent)" opacity="0.8"/>
+        <text x="60" y="20" text-anchor="middle" fill="var(--accent)" font-family="Cinzel" font-size="6" letter-spacing="2">HIGH COURT</text>
+        <text x="60" y="108" text-anchor="middle" fill="var(--accent)" font-family="Cinzel" font-size="6" letter-spacing="2">SEAL · XIV</text>
+      </svg>
+    </div>
+    <p class="font-display text-[var(--muted)] tracking-[0.5em] text-[10px] md:text-xs mb-8 reveal">OFFICIAL ELECTORAL PROCESS</p>
+    <div class="section-divider reveal"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
+    <h1 class="hero-title text-4xl md:text-7xl lg:text-8xl mb-2 leading-none" id="mainTitle">PRESIDENT SELECTION</h1>
+    <p class="font-display text-[var(--accent)] tracking-[0.4em] text-sm md:text-base mt-6 mb-8 reveal" id="decree">BY DECREE OF THE HIGH COURT</p>
+    <div class="section-divider reveal"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
+    <p class="max-w-xl text-[var(--muted)] text-sm md:text-base leading-relaxed reveal" id="intro">
+      The citizens are called forth to cast their sovereign vote. Each voice shall echo through the annals of justice.
+      Two candidates stand before the realm — choose wisely, for the future is forged in this moment.
+    </p>
+  </section>
+
+  <!-- Already voted banner (hidden by default) -->
+  <div class="relative z-10 px-6 md:px-12 max-w-5xl mx-auto" id="votedBanner" style="display:none;">
+    <div class="already-voted-banner">
+      <p class="font-display text-[var(--accent)] tracking-[0.3em] text-sm mb-2">YOUR VOTE HAS BEEN RECORDED</p>
+      <p class="text-[var(--muted)] text-xs mb-4" id="votedBannerText">You cast your vote for —</p>
+      <button id="resetVoteBtn" class="vote-btn secondary" style="padding:10px 30px; font-size:11px;">RESET MY VOTE</button>
+    </div>
+  </div>
+
+  <section class="relative z-10 px-6 md:px-12 py-12 max-w-7xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3">THE CANDIDATES</p>
+      <h2 class="font-display text-3xl md:text-5xl mb-3">Two Paths, One Destiny</h2>
+      <p class="text-[var(--muted)] text-sm">Review each symbol carefully before casting your vote</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+      <!-- Candidate 1: Aga Mushahid -->
+      <div class="candidate-card p-8 md:p-12 reveal" id="card-aga" data-candidate="aga">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div id="stamp-aga" class="voted-stamp" style="display:none;">VOTED</div>
+        <div class="text-center mb-8">
+          <p class="font-display text-[var(--muted)] tracking-[0.4em] text-[10px] mb-2">CANDIDATE I</p>
+          <div class="ornament-line w-20 mx-auto mb-6"></div>
+          <h3 class="font-display text-3xl md:text-4xl mb-2 tracking-wider">AGA MUSHAHID</h3>
+          <p class="text-[var(--accent)] text-xs tracking-[0.4em] font-display">THE MOUNTAIN</p>
+        </div>
+        <div class="symbol-container mb-8">
+          <div class="symbol-glow"></div>
+          <svg viewBox="0 0 200 200" class="symbol-svg relative w-full h-full">
+            <defs>
+              <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e8c87a"/><stop offset="60%" stop-color="#c9a961"/><stop offset="100%" stop-color="#6b5430"/>
+              </linearGradient>
+              <linearGradient id="mountainBack" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#8a6f3a"/><stop offset="100%" stop-color="#3d2f1a"/>
+              </linearGradient>
+              <linearGradient id="snowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#f5f0e6"/><stop offset="100%" stop-color="#c9a961"/>
+              </linearGradient>
+            </defs>
+            <path d="M 0 160 L 40 100 L 70 130 L 100 90 L 140 120 L 170 80 L 200 160 Z" fill="url(#mountainBack)" opacity="0.5"/>
+            <path d="M 0 170 L 50 110 L 90 140 L 130 100 L 180 130 L 200 170 Z" fill="url(#mountainBack)" opacity="0.75"/>
+            <path d="M 5 175 L 80 45 L 115 105 L 145 65 L 195 175 Z" fill="url(#mountainGrad)"/>
+            <path d="M 80 45 L 95 70 L 88 78 L 80 70 L 72 78 L 65 70 Z" fill="url(#snowGrad)"/>
+            <path d="M 145 65 L 158 88 L 152 95 L 145 88 L 138 95 L 132 88 Z" fill="url(#snowGrad)"/>
+            <path d="M 80 45 L 115 105" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" fill="none"/>
+            <path d="M 115 105 L 145 65" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" fill="none"/>
+            <line x1="0" y1="175" x2="200" y2="175" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+            <circle cx="30" cy="30" r="1" fill="var(--accent)" opacity="0.6"/>
+            <circle cx="170" cy="25" r="0.8" fill="var(--accent)" opacity="0.5"/>
+            <circle cx="100" cy="15" r="1.2" fill="var(--accent)" opacity="0.7"/>
+          </svg>
+        </div>
+        <p class="text-center text-[var(--muted)] text-sm leading-relaxed mb-8 italic font-light px-4">
+          "Steadfast as the ancient peaks. Unmovable. Eternal. Justice stands firm upon the summit of duty."
+        </p>
+        <div class="text-center">
+          <button class="vote-btn pulse" id="voteBtnAga" data-candidate="aga">Cast Vote</button>
+        </div>
+      </div>
+
+      <!-- Candidate 2: Muhammad Ali -->
+      <div class="candidate-card p-8 md:p-12 reveal" id="card-ali" data-candidate="ali">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div id="stamp-ali" class="voted-stamp" style="display:none;">VOTED</div>
+        <div class="text-center mb-8">
+          <p class="font-display text-[var(--muted)] tracking-[0.4em] text-[10px] mb-2">CANDIDATE II</p>
+          <div class="ornament-line w-20 mx-auto mb-6"></div>
+          <h3 class="font-display text-3xl md:text-4xl mb-2 tracking-wider">MUHAMMAD ALI</h3>
+          <p class="text-[var(--accent)] text-xs tracking-[0.4em] font-display">THE ARROW</p>
+        </div>
+        <div class="symbol-container mb-8">
+          <div class="symbol-glow"></div>
+          <svg viewBox="0 0 200 200" class="symbol-svg relative w-full h-full">
+            <defs>
+              <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6b5430"/><stop offset="40%" stop-color="#c9a961"/><stop offset="100%" stop-color="#e8c87a"/>
+              </linearGradient>
+              <linearGradient id="arrowHeadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c9a961"/><stop offset="100%" stop-color="#f5f0e6"/>
+              </linearGradient>
+            </defs>
+            <path d="M 20 100 Q 100 20 180 100" fill="none" stroke="var(--accent)" stroke-width="0.5" opacity="0.2" stroke-dasharray="2 4"/>
+            <rect x="25" y="96" width="135" height="8" fill="url(#arrowGrad)"/>
+            <line x1="40" y1="98" x2="155" y2="98" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+            <line x1="40" y1="102" x2="155" y2="102" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+            <path d="M 160 75 L 195 100 L 160 125 Z" fill="url(#arrowHeadGrad)"/>
+            <path d="M 160 75 L 195 100 L 160 100 Z" fill="rgba(255,255,255,0.15)"/>
+            <path d="M 25 100 L 5 75 L 15 100 L 5 125 Z" fill="url(#arrowGrad)"/>
+            <path d="M 25 100 L 5 75 L 15 100 Z" fill="rgba(0,0,0,0.2)"/>
+            <line x1="10" y1="85" x2="22" y2="100" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>
+            <line x1="10" y1="115" x2="22" y2="100" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>
+            <rect x="50" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
+            <rect x="80" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
+            <rect x="110" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
+            <rect x="140" y="92" width="3" height="16" fill="var(--accent)" opacity="0.8"/>
+            <line x1="195" y1="100" x2="200" y2="100" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
+            <line x1="190" y1="85" x2="198" y2="85" stroke="var(--accent)" stroke-width="0.5" opacity="0.3"/>
+            <line x1="190" y1="115" x2="198" y2="115" stroke="var(--accent)" stroke-width="0.5" opacity="0.3"/>
+          </svg>
+        </div>
+        <p class="text-center text-[var(--muted)] text-sm leading-relaxed mb-8 italic font-light px-4">
+          "Swift as the arrow's flight. Direct. True. The future is forged in motion toward destiny."
+        </p>
+        <div class="text-center">
+          <button class="vote-btn pulse" id="voteBtnAli" data-candidate="ali">Cast Vote</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultsSection" class="relative z-10 px-6 md:px-12 py-20 max-w-5xl mx-auto" style="display:none;">
+    <div class="text-center mb-16">
+      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3">LIVE TALLY</p>
+      <h2 class="font-display text-3xl md:text-5xl mb-4">The People Have Spoken</h2>
+      <div class="section-divider"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
+      <p class="text-[var(--muted)] text-sm">Total votes cast: <span id="totalVotes" class="stat-num text-xl ml-1">0</span></p>
+    </div>
+    <div class="space-y-14">
+      <div class="result-row">
+        <div class="flex justify-between items-end mb-4">
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="font-display text-2xl md:text-3xl">AGA MUSHAHID</p>
+              <span id="agaWinner" class="winner-badge" style="display:none;">LEADING</span>
+            </div>
+            <p class="text-[var(--accent)] text-xs tracking-[0.4em] font-display">THE MOUNTAIN</p>
+          </div>
+          <div class="text-right">
+            <p class="stat-num text-4xl md:text-5xl" id="agaCount">0</p>
+            <p class="text-[var(--muted)] text-xs tracking-widest" id="agaPercent">0%</p>
+          </div>
+        </div>
+        <div class="results-bar"><div class="results-fill" id="agaBar"></div></div>
+      </div>
+      <div class="result-row">
+        <div class="flex justify-between items-end mb-4">
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="font-display text-2xl md:text-3xl">MUHAMMAD ALI</p>
+              <span id="aliWinner" class="winner-badge" style="display:none;">LEADING</span>
+            </div>
+            <p class="text-[var(--accent)] text-xs tracking-[0.4em] font-display">THE ARROW</p>
+          </div>
+          <div class="text-right">
+            <p class="stat-num text-4xl md:text-5xl" id="aliCount">0</p>
+            <p class="text-[var(--muted)] text-xs tracking-widest" id="aliPercent">0%</p>
+          </div>
+        </div>
+        <div class="results-bar"><div class="results-fill" id="aliBar"></div></div>
+      </div>
+    </div>
+    <div class="text-center mt-16">
+      <p class="text-[var(--muted)] text-sm italic font-light" id="resultsMessage"></p>
+    </div>
+  </section>
+
+  <footer class="relative z-10 px-6 md:px-12 py-10 mt-20 border-t border-[rgba(201,169,97,0.15)] text-center">
+    <div class="section-divider mb-6"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
+    <p class="font-display text-[var(--muted)] tracking-[0.3em] text-[10px] md:text-xs">BY AUTHORITY OF HIGH COURT 14</p>
+    <p class="text-[var(--muted)] text-[10px] tracking-[0.3em] mt-2 opacity-60">SEAL OF THE REPUBLIC · ELECTORAL DIVISION</p>
+  </footer>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <p class="font-display text-[var(--accent)] tracking-[0.4em] text-[10px] mb-4">CONFIRM YOUR VOTE</p>
+      <div class="ornament-line w-20 mx-auto mb-6"></div>
+      <h3 class="font-display text-3xl mb-2 tracking-wider" id="confirmName"></h3>
+      <p class="text-[var(--accent)] text-xs tracking-[0.4em] font-display mb-6" id="confirmSymbol"></p>
+      <div class="my-8" id="confirmSymbolDisplay"></div>
+      <p class="text-[var(--muted)] text-sm mb-8 leading-relaxed">
+        This action is final and irrevocable.<br>Once cast, the vote cannot be undone.
+      </p>
+      <div class="flex gap-4 justify-center flex-wrap">
+        <button class="vote-btn secondary" id="cancelVoteBtn">CANCEL</button>
+        <button class="vote-btn" id="confirmVoteBtn">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ===== Storage with fallback =====
+  const STORAGE_KEY = 'hc14_president_votes';
+  const VOTER_KEY = 'hc14_voter_id';
+
+  // In-memory fallback if localStorage is unavailable
+  let memVotes = { aga: 0, ali: 0 };
+  let memVote = null;
+  let storageAvailable = true;
+
+  try {
+    const test = '__test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+  } catch(e) {
+    storageAvailable = false;
+    console.warn('localStorage unavailable, using in-memory fallback');
+  }
+
+  function getVotes() {
+    if (storageAvailable) {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+          const parsed = JSON.parse(data);
+          return { aga: parsed.aga || 0, ali: parsed.ali || 0 };
+        }
+      } catch(e) { console.warn('Failed to read votes:', e); }
+      return { aga: 0, ali: 0 };
+    }
+    return { ...memVotes };
+  }
+
+  function saveVotes(votes) {
+    if (storageAvailable) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); }
+      catch(e) { console.warn('Failed to save votes:', e); memVotes = { ...votes }; }
+    } else {
+      memVotes = { ...votes };
+    }
+  }
+
+  function getMyVote() {
+    if (storageAvailable) {
+      try { return localStorage.getItem(VOTER_KEY); }
+      catch(e) { return memVote; }
+    }
+    return memVote;
+  }
+
+  function markVoted(candidate) {
+    if (storageAvailable) {
+      try { localStorage.setItem(VOTER_KEY, candidate); }
+      catch(e) { memVote = candidate; }
+    } else {
+      memVote = candidate;
+    }
+  }
+
+  function clearMyVote() {
+    if (storageAvailable) {
+      try { localStorage.removeItem(VOTER_KEY); }
+      catch(e) { memVote = null; }
+    } else {
+      memVote = null;
+    }
+  }
+
+  // ===== State =====
+  let pendingVote = null;
+
+  // ===== Particle System =====
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', function() { resizeCanvas(); createParticles(); });
+
+  function createParticles() {
+    particles = [];
+    var count = Math.floor((window.innerWidth * window.innerHeight) / 18000);
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1.6 + 0.2,
+        speedY: -Math.random() * 0.25 - 0.05,
+        speedX: (Math.random() - 0.5) * 0.15,
+        opacity: Math.random() * 0.5 + 0.1,
+        twinkle: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 0.03 + 0.01
+      });
+    }
+  }
+  createParticles();
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(function(p) {
+      p.y += p.speedY; p.x += p.speedX; p.twinkle += p.twinkleSpeed;
+      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      var op = p.opacity * (0.4 + 0.6 * Math.sin(p.twinkle));
+      ctx.fillStyle = 'rgba(201, 169, 97, ' + op + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  // ===== Title Animation =====
+  function animateTitle() {
+    var title = document.getElementById('mainTitle');
+    var text = title.textContent;
+    title.innerHTML = '';
+    text.split('').forEach(function(char, i) {
+      var span = document.createElement('span');
+      span.className = 'letter';
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.style.animationDelay = (0.4 + i * 0.06) + 's';
+      title.appendChild(span);
+    });
+  }
+  animateTitle();
+
+  // ===== Scroll Reveal =====
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) entry.target.classList.add('in');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+  setTimeout(function() { document.getElementById('seal').classList.add('in'); }, 200);
+  setTimeout(function() {
+    document.getElementById('decree').classList.add('in');
+    document.getElementById('intro').classList.add('in');
+  }, 1500);
+
+  // ===== Toast =====
+  var toastTimer;
+  function showToast(msg) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 3500);
+  }
+
+  // ===== Vote UI Update =====
+  function updateVoteUI() {
+    var myVote = getMyVote();
+    var cardAga = document.getElementById('card-aga');
+    var cardAli = document.getElementById('card-ali');
+    var stampAga = document.getElementById('stamp-aga');
+    var stampAli = document.getElementById('stamp-ali');
+    var btnAga = document.getElementById('voteBtnAga');
+    var btnAli = document.getElementById('voteBtnAli');
+    var banner = document.getElementById('votedBanner');
+    var bannerText = document.getElementById('votedBannerText');
+
+    if (myVote) {
+      // Lock both cards
+      cardAga.classList.add('locked');
+      cardAli.classList.add('locked');
+      // Disable both buttons
+      btnAga.disabled = true;
+      btnAli.disabled = true;
+      btnAga.classList.remove('pulse');
+      btnAli.classList.remove('pulse');
+      // Show stamp on voted card
+      cardAga.classList.remove('voted');
+      cardAli.classList.remove('voted');
+      stampAga.style.display = 'none';
+      stampAli.style.display = 'none';
+      if (myVote === 'aga') {
+        cardAga.classList.add('voted');
+        cardAga.classList.remove('locked'); // unlock voted card visually but button still disabled
+        stampAga.style.display = 'block';
+        bannerText.innerHTML = 'You cast your vote for <span class="text-[var(--accent)] font-display tracking-wider">AGA MUSHAHID — THE MOUNTAIN</span>';
+      } else if (myVote === 'ali') {
+        cardAli.classList.add('voted');
+        cardAli.classList.remove('locked');
+        stampAli.style.display = 'block';
+        bannerText.innerHTML = 'You cast your vote for <span class="text-[var(--accent)] font-display tracking-wider">MUHAMMAD ALI — THE ARROW</span>';
+      }
+      banner.style.display = 'block';
+    } else {
+      // Unlock everything
+      cardAga.classList.remove('locked', 'voted');
+      cardAli.classList.remove('locked', 'voted');
+      stampAga.style.display = 'none';
+      stampAli.style.display = 'none';
+      btnAga.disabled = false;
+      btnAli.disabled = false;
+      btnAga.classList.add('pulse');
+      btnAli.classList.add('pulse');
+      banner.style.display = 'none';
+    }
+  }
+
+  // ===== Confirm Modal =====
+  function openConfirm(candidate) {
+    var existing = getMyVote();
+    if (existing) {
+      var name = existing === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
+      showToast('ALREADY VOTED FOR ' + name + ' — RESET TO CHANGE');
+      return;
+    }
+    pendingVote = candidate;
+    var modal = document.getElementById('confirmModal');
+    var nameEl = document.getElementById('confirmName');
+    var symbolEl = document.getElementById('confirmSymbol');
+    var display = document.getElementById('confirmSymbolDisplay');
+
+    if (candidate === 'aga') {
+      nameEl.textContent = 'AGA MUSHAHID';
+      symbolEl.textContent = 'THE MOUNTAIN';
+      display.innerHTML =
+        '<svg viewBox="0 0 200 200" width="140" height="140" class="mx-auto">' +
+        '<defs>' +
+        '<linearGradient id="mGrad2" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" stop-color="#e8c87a"/><stop offset="100%" stop-color="#6b5430"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="snow2" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" stop-color="#f5f0e6"/><stop offset="100%" stop-color="#c9a961"/>' +
+        '</linearGradient>' +
+        '</defs>' +
+        '<path d="M 5 175 L 80 45 L 115 105 L 145 65 L 195 175 Z" fill="url(#mGrad2)"/>' +
+        '<path d="M 80 45 L 95 70 L 80 70 L 72 78 L 65 70 Z" fill="url(#snow2)"/>' +
+        '<path d="M 145 65 L 158 88 L 145 88 L 132 88 Z" fill="url(#snow2)"/>' +
+        '</svg>';
+    } else {
+      nameEl.textContent = 'MUHAMMAD ALI';
+      symbolEl.textContent = 'THE ARROW';
+      display.innerHTML =
+        '<svg viewBox="0 0 200 200" width="140" height="140" class="mx-auto">' +
+        '<defs>' +
+        '<linearGradient id="aGrad2" x1="0%" y1="0%" x2="100%" y2="0%">' +
+        '<stop offset="0%" stop-color="#6b5430"/><stop offset="100%" stop-color="#e8c87a"/>' +
+        '</linearGradient>' +
+        '</defs>' +
+        '<rect x="25" y="96" width="135" height="8" fill="url(#aGrad2)"/>' +
+        '<path d="M 160 75 L 195 100 L 160 125 Z" fill="url(#aGrad2)"/>' +
+        '<path d="M 25 100 L 5 75 L 15 100 L 5 125 Z" fill="url(#aGrad2)"/>' +
+        '</svg>';
+    }
+    modal.classList.add('active');
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmModal').classList.remove('active');
+    pendingVote = null;
+  }
+
+  function castVote() {
+    if (!pendingVote) {
+      console.warn('castVote called but pendingVote is null');
+      return;
+    }
+    var choice = pendingVote;
+    pendingVote = null;
+
+    // Close modal first
+    document.getElementById('confirmModal').classList.remove('active');
+
+    // Cinematic flash
+    var flash = document.getElementById('flash');
+    flash.classList.remove('flash');
+    void flash.offsetWidth; // force reflow to restart animation
+    flash.classList.add('flash');
+    setTimeout(function() { flash.classList.remove('flash'); }, 1000);
+
+    // Record vote
+    var votes = getVotes();
+    votes[choice] = (votes[choice] || 0) + 1;
+    saveVotes(votes);
+    markVoted(choice);
+
+    // Update UI to locked state
+    updateVoteUI();
+
+    var candidateName = choice === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
+    showToast('VOTE CAST FOR ' + candidateName);
+
+    // Show results after a delay
+    setTimeout(function() { showResults(); }, 1400);
+  }
+
+  // ===== Results =====
+  function animateCounter(id, target) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var duration = 1200;
+    var startTime = performance.now();
+    function update(now) {
+      var elapsed = now - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(eased * target);
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(update);
+  }
+
+  function showResults() {
+    var section = document.getElementById('resultsSection');
+    section.style.display = 'block';
+
+    var votes = getVotes();
+    var total = (votes.aga || 0) + (votes.ali || 0);
+
+    animateCounter('totalVotes', total);
+    animateCounter('agaCount', votes.aga || 0);
+    animateCounter('aliCount', votes.ali || 0);
+
+    var agaPercent = total > 0 ? (votes.aga / total * 100) : 0;
+    var aliPercent = total > 0 ? (votes.ali / total * 100) : 0;
+
+    document.getElementById('agaPercent').textContent = agaPercent.toFixed(1) + '%';
+    document.getElementById('aliPercent').textContent = aliPercent.toFixed(1) + '%';
+
+    setTimeout(function() {
+      document.getElementById('agaBar').style.width = agaPercent + '%';
+      document.getElementById('aliBar').style.width = aliPercent + '%';
+    }, 300);
+
+    var agaBadge = document.getElementById('agaWinner');
+    var aliBadge = document.getElementById('aliWinner');
+    agaBadge.style.display = 'none';
+    aliBadge.style.display = 'none';
+
+    if (total > 0) {
+      if (votes.aga > votes.ali) {
+        agaBadge.textContent = 'LEADING';
+        agaBadge.style.display = 'inline-block';
+      } else if (votes.ali > votes.aga) {
+        aliBadge.textContent = 'LEADING';
+        aliBadge.style.display = 'inline-block';
+      } else {
+        agaBadge.textContent = 'TIED';
+        aliBadge.textContent = 'TIED';
+        agaBadge.style.display = 'inline-block';
+        aliBadge.style.display = 'inline-block';
+      }
+    }
+
+    var msg = document.getElementById('resultsMessage');
+    if (total === 0) {
+      msg.textContent = 'The tally awaits the first voice.';
+    } else if (votes.aga > votes.ali) {
+      var diff = votes.aga - votes.ali;
+      msg.textContent = 'The Mountain stands tall — Aga Mushahid leads by ' + diff + ' vote' + (diff !== 1 ? 's' : '') + '.';
+    } else if (votes.ali > votes.aga) {
+      var diff2 = votes.ali - votes.aga;
+      msg.textContent = 'The Arrow flies true — Muhammad Ali leads by ' + diff2 + ' vote' + (diff2 !== 1 ? 's' : '') + '.';
+    } else {
+      msg.textContent = 'A perfect equilibrium. The realm is divided equally.';
+    }
+
+    setTimeout(function() {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  // ===== Reset Vote =====
+  function resetVote() {
+    var myVote = getMyVote();
+    if (!myVote) {
+      showToast('NO VOTE TO RESET');
+      return;
+    }
+    var votes = getVotes();
+    if (votes[myVote] && votes[myVote] > 0) votes[myVote]--;
+    saveVotes(votes);
+    clearMyVote();
+    updateVoteUI();
+    showToast('VOTE RESET — YOU MAY VOTE AGAIN');
+    setTimeout(function() { showResults(); }, 600);
+  }
+
+  // ===== Event Listeners (using addEventListener, not inline onclick) =====
+  document.getElementById('voteBtnAga').addEventListener('click', function() {
+    openConfirm('aga');
+  });
+  document.getElementById('voteBtnAli').addEventListener('click', function() {
+    openConfirm('ali');
+  });
+  document.getElementById('cancelVoteBtn').addEventListener('click', closeConfirm);
+  document.getElementById('confirmVoteBtn').addEventListener('click', castVote);
+  document.getElementById('resultsBtn').addEventListener('click', showResults);
+  document.getElementById('resetVoteBtn').addEventListener('click', resetVote);
+
+  // Close modal on overlay click
+  document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target.id === 'confirmModal') closeConfirm();
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeConfirm();
+  });
+
+  // ===== Initialize on load =====
+  updateVoteUI();
+
+  // If returning voter, show results after a moment
+  if (getMyVote()) {
+    setTimeout(function() { showResults(); }, 2000);
+  }
+
+  console.log('High Court 14 voting system initialized. Storage available:', storageAvailable);
+})();
+</script>
+</body>
+</html>
