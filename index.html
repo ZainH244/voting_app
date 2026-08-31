@@ -145,15 +145,6 @@
   }
   .modal-overlay.active .modal { transform: scale(1) translateY(0); }
 
-  .admin-input {
-    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--muted);
-    color: var(--accent); text-align: center; font-family: 'Cinzel', serif;
-    letter-spacing: 0.3em; padding: 14px; margin-bottom: 24px; font-size: 16px;
-    outline: none; transition: border 0.3s;
-  }
-  .admin-input:focus { border-color: var(--accent); }
-  .admin-input::placeholder { color: var(--muted); opacity: 0.5; letter-spacing: 0.3em; }
-
   .toast {
     position: fixed; bottom: 40px; left: 50%;
     transform: translateX(-50%) translateY(120px);
@@ -171,7 +162,7 @@
   .results-bar { height: 10px; background: rgba(255,255,255,0.04); overflow: hidden; position: relative; border: 1px solid rgba(201,169,97,0.1); }
   .results-fill {
     height: 100%; background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-bright));
-    width: 0%; transition: width 1.5s cubic-bezier(0.16,1,0.3,1); position: relative;
+    width: 0%; transition: width 2s cubic-bezier(0.16,1,0.3,1); position: relative;
   }
   .results-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4)); }
 
@@ -208,29 +199,6 @@
     font-family: 'Cinzel', serif; font-weight: 700;
     background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-    transition: filter 0.3s;
-  }
-
-  .stat-flash { animation: statFlash 1s; }
-  @keyframes statFlash {
-    0% { filter: drop-shadow(0 0 20px rgba(232, 200, 122, 1)) brightness(1.8); }
-    100% { filter: drop-shadow(0 0 0px rgba(232, 200, 122, 0)) brightness(1); }
-  }
-
-  .live-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #ff4136;
-    border-radius: 50%;
-    animation: livePulse 1.5s infinite;
-    box-shadow: 0 0 10px #ff4136;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
-  @keyframes livePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
   }
 
   .section-divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 auto 40px; }
@@ -271,14 +239,9 @@
         <p class="text-[10px] tracking-[0.3em] text-[var(--muted)] mt-1">EST. MMXXV</p>
       </div>
     </div>
-    <div class="flex gap-3 items-center">
-      <button id="resetGlobalBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-red-400 transition font-display border border-[rgba(201,169,97,0.2)] hover:border-red-400 px-4 py-2.5" style="display: none;">
-        RESET VOTE
-      </button>
-      <button id="adminBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
-        ADMIN ACCESS
-      </button>
-    </div>
+    <button id="resultsBtn" class="text-xs tracking-[0.3em] text-[var(--muted)] hover:text-[var(--accent)] transition font-display border border-[rgba(201,169,97,0.2)] hover:border-[var(--accent)] px-5 py-2.5">
+      VIEW TALLY
+    </button>
   </header>
 
   <section class="relative z-10 min-h-[80vh] flex flex-col items-center justify-center px-6 py-20 text-center">
@@ -309,7 +272,7 @@
     <div class="already-voted-banner">
       <p class="font-display text-[var(--accent)] tracking-[0.3em] text-sm mb-2">YOUR VOTE HAS BEEN RECORDED</p>
       <p class="text-[var(--muted)] text-xs mb-4" id="votedBannerText">You cast your vote for —</p>
-      <button id="resetVoteBtn" class="vote-btn secondary" style="padding:10px 30px; font-size:11px;">RESET MY VOTE (TESTING)</button>
+      <button id="resetVoteBtn" class="vote-btn secondary" style="padding:10px 30px; font-size:11px;">RESET MY VOTE</button>
     </div>
   </div>
 
@@ -418,12 +381,9 @@
     </div>
   </section>
 
-  <!-- Results Section (Admin Only) -->
   <section id="resultsSection" class="relative z-10 px-6 md:px-12 py-20 max-w-5xl mx-auto" style="display:none;">
     <div class="text-center mb-16">
-      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3 flex items-center justify-center">
-        <span class="live-dot"></span>LIVE ADMIN TALLY
-      </p>
+      <p class="font-display text-[var(--accent)] tracking-[0.5em] text-[10px] md:text-xs mb-3">LIVE TALLY</p>
       <h2 class="font-display text-3xl md:text-5xl mb-4">The People Have Spoken</h2>
       <div class="section-divider"><div class="line"></div><span class="ornament-diamond"></span><div class="line right"></div></div>
       <p class="text-[var(--muted)] text-sm">Total votes cast: <span id="totalVotes" class="stat-num text-xl ml-1">0</span></p>
@@ -473,7 +433,7 @@
     <p class="text-[var(--muted)] text-[10px] tracking-[0.3em] mt-2 opacity-60">SEAL OF THE REPUBLIC · ELECTORAL DIVISION</p>
   </footer>
 
-  <!-- Vote Confirm Modal -->
+  <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal">
       <div class="corner tl"></div><div class="corner tr"></div>
@@ -493,41 +453,32 @@
     </div>
   </div>
 
-  <!-- Admin Login Modal -->
-  <div class="modal-overlay" id="adminModal">
-    <div class="modal">
-      <div class="corner tl"></div><div class="corner tr"></div>
-      <div class="corner bl"></div><div class="corner br"></div>
-      <p class="font-display text-[var(--accent)] tracking-[0.4em] text-[10px] mb-4">ADMINISTRATOR ACCESS</p>
-      <div class="ornament-line w-20 mx-auto mb-6"></div>
-      <h3 class="font-display text-2xl mb-6 tracking-wider">ENTER PASSPHRASE</h3>
-      <input type="password" id="adminPass" class="admin-input" placeholder="••••••••">
-      <div class="flex gap-4 justify-center flex-wrap">
-        <button class="vote-btn secondary" id="cancelAdminBtn">CANCEL</button>
-        <button class="vote-btn" id="loginAdminBtn">AUTHORIZE</button>
-      </div>
-    </div>
-  </div>
-
   <div class="toast" id="toast"></div>
 
-<script>
-(function() {
-  'use strict';
+<!-- Firebase Modular SDK Setup -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // ===== API Configuration =====
-  // Using counterapi.dev for reliable global syncing
-  const API_BASE = 'https://api.counterapi.dev/v1';
-  const NAMESPACE = 'high-court-14-election-v6';
-  
-  // ===== Local Storage Settings =====
+  // TODO: Paste your actual Firebase configuration values here from Firebase Console Settings
+ const firebaseConfig = {
+  apiKey: "AIzaSyDP75xgDA5JwVcQ7WpuMZZ4DnXbf3EMyv4",
+  authDomain: "high-court-14.firebaseapp.com",
+  projectId: "high-court-14",
+  storageBucket: "high-court-14.firebasestorage.app",
+  messagingSenderId: "2475592724",
+  appId: "1:2475592724:web:1c6ce839a24c531fbd2b01"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const votesDocRef = doc(db, "elections", "president");
+
   const VOTER_KEY = 'hc14_voter_id';
-  
   let pendingVote = null;
-  let counterAnimations = {};
-  let toastTimer;
-  let pollingInterval = null;
+  let liveVotes = { aga: 0, ali: 0 };
 
+  // Track single vote locally per user
   function getMyVote() {
     try { return localStorage.getItem(VOTER_KEY); } catch(e) { return null; }
   }
@@ -540,155 +491,31 @@
     try { localStorage.removeItem(VOTER_KEY); } catch(e) {}
   }
 
-  // ===== API Calls with Fallback =====
-  async function getVotes() {
-    try {
-      const [resAga, resAli] = await Promise.all([
-        fetch(`${API_BASE}/get/${NAMESPACE}/aga`),
-        fetch(`${API_BASE}/get/${NAMESPACE}/ali`)
-      ]);
-      const dataAga = resAga.ok ? await resAga.json() : { count: 0 };
-      const dataAli = resAli.ok ? await resAli.json() : { count: 0 };
-      return {
-        aga: dataAga.count || 0,
-        ali: dataAli.count || 0
-      };
-    } catch (e) {
-      console.warn('Live sync failed, using local fallback:', e);
-      return {
-        aga: parseInt(localStorage.getItem('local_aga') || '0'),
-        ali: parseInt(localStorage.getItem('local_ali') || '0')
-      };
+  // Realtime Listener for Cloud Firestore
+  onSnapshot(votesDocRef, async (docSnap) => {
+    if (!docSnap.exists()) {
+      // Initialize document if it doesn't exist yet
+      await setDoc(votesDocRef, { aga: 0, ali: 0 });
+    } else {
+      const data = docSnap.data();
+      liveVotes = { aga: data.aga || 0, ali: data.ali || 0 };
+      updateResultsDisplay(liveVotes);
     }
-  }
+  }, (error) => {
+    console.error("Firestore Listener Error:", error);
+  });
 
-  async function castVoteAPI(candidate) {
-    try {
-      const res = await fetch(`${API_BASE}/up/${NAMESPACE}/${candidate}`);
-      if (!res.ok) throw new Error('API Error');
-      const data = await res.json();
-      return data.count || 0;
-    } catch (e) {
-      console.warn('Cast vote API failed, using local fallback:', e);
-      let localCount = parseInt(localStorage.getItem('local_' + candidate) || '0');
-      localCount++;
-      localStorage.setItem('local_' + candidate, localCount);
-      return localCount;
-    }
-  }
-
-  async function decrementVoteAPI(candidate) {
-    try {
-      const res = await fetch(`${API_BASE}/down/${NAMESPACE}/${candidate}`);
-      if (!res.ok) throw new Error('API Error');
-      const data = await res.json();
-      return data.count || 0;
-    } catch (e) {
-      console.warn('Decrement vote API failed, using local fallback:', e);
-      let localCount = parseInt(localStorage.getItem('local_' + candidate) || '0');
-      localCount = Math.max(0, localCount - 1);
-      localStorage.setItem('local_' + candidate, localCount);
-      return localCount;
-    }
-  }
-
-  // ===== Particle System =====
-  const canvas = document.getElementById('particles');
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeCanvas();
-  window.addEventListener('resize', function() { resizeCanvas(); createParticles(); });
-
-  function createParticles() {
-    particles = [];
-    var count = Math.floor((window.innerWidth * window.innerHeight) / 18000);
-    for (var i = 0; i < count; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.6 + 0.2,
-        speedY: -Math.random() * 0.25 - 0.05,
-        speedX: (Math.random() - 0.5) * 0.15,
-        opacity: Math.random() * 0.5 + 0.1,
-        twinkle: Math.random() * Math.PI * 2,
-        twinkleSpeed: Math.random() * 0.03 + 0.01
-      });
-    }
-  }
-  createParticles();
-
-  function animateParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(function(p) {
-      p.y += p.speedY; p.x += p.speedX; p.twinkle += p.twinkleSpeed;
-      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      var op = p.opacity * (0.4 + 0.6 * Math.sin(p.twinkle));
-      ctx.fillStyle = 'rgba(201, 169, 97, ' + op + ')';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    requestAnimationFrame(animateParticles);
-  }
-  animateParticles();
-
-  // ===== Title Animation =====
-  function animateTitle() {
-    var title = document.getElementById('mainTitle');
-    var text = title.textContent;
-    title.innerHTML = '';
-    text.split('').forEach(function(char, i) {
-      var span = document.createElement('span');
-      span.className = 'letter';
-      span.textContent = char === ' ' ? '\u00A0' : char;
-      span.style.animationDelay = (0.4 + i * 0.06) + 's';
-      title.appendChild(span);
-    });
-  }
-  animateTitle();
-
-  // ===== Scroll Reveal =====
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) entry.target.classList.add('in');
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
-
-  setTimeout(function() { document.getElementById('seal').classList.add('in'); }, 200);
-  setTimeout(function() {
-    document.getElementById('decree').classList.add('in');
-    document.getElementById('intro').classList.add('in');
-  }, 1500);
-
-  // ===== Toast =====
-  function showToast(msg) {
-    var toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 3500);
-  }
-
-  // ===== Vote UI Update =====
+  // UI Updates for Voting Buttons and Banners
   function updateVoteUI() {
-    var myVote = getMyVote();
-    var cardAga = document.getElementById('card-aga');
-    var cardAli = document.getElementById('card-ali');
-    var stampAga = document.getElementById('stamp-aga');
-    var stampAli = document.getElementById('stamp-ali');
-    var btnAga = document.getElementById('voteBtnAga');
-    var btnAli = document.getElementById('voteBtnAli');
-    var banner = document.getElementById('votedBanner');
-    var bannerText = document.getElementById('votedBannerText');
-    var resetGlobalBtn = document.getElementById('resetGlobalBtn');
+    const myVote = getMyVote();
+    const cardAga = document.getElementById('card-aga');
+    const cardAli = document.getElementById('card-ali');
+    const stampAga = document.getElementById('stamp-aga');
+    const stampAli = document.getElementById('stamp-ali');
+    const btnAga = document.getElementById('voteBtnAga');
+    const btnAli = document.getElementById('voteBtnAli');
+    const banner = document.getElementById('votedBanner');
+    const bannerText = document.getElementById('votedBannerText');
 
     if (myVote) {
       cardAga.classList.add('locked');
@@ -697,12 +524,11 @@
       btnAli.disabled = true;
       btnAga.classList.remove('pulse');
       btnAli.classList.remove('pulse');
-      
       cardAga.classList.remove('voted');
       cardAli.classList.remove('voted');
       stampAga.style.display = 'none';
       stampAli.style.display = 'none';
-      
+
       if (myVote === 'aga') {
         cardAga.classList.add('voted');
         cardAga.classList.remove('locked');
@@ -715,7 +541,6 @@
         bannerText.innerHTML = 'You cast your vote for <span class="text-[var(--accent)] font-display tracking-wider">MUHAMMAD ALI — THE ARROW</span>';
       }
       banner.style.display = 'block';
-      resetGlobalBtn.style.display = 'block';
     } else {
       cardAga.classList.remove('locked', 'voted');
       cardAli.classList.remove('locked', 'voted');
@@ -726,37 +551,29 @@
       btnAga.classList.add('pulse');
       btnAli.classList.add('pulse');
       banner.style.display = 'none';
-      resetGlobalBtn.style.display = 'none';
     }
   }
 
-  // ===== Confirm Modal =====
+  // Confirm Modal
   function openConfirm(candidate) {
-    var existing = getMyVote();
+    const existing = getMyVote();
     if (existing) {
-      var name = existing === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
-      showToast('ALREADY VOTED FOR ' + name);
+      const name = existing === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
+      showToast('ALREADY VOTED FOR ' + name + ' — RESET TO CHANGE');
       return;
     }
     pendingVote = candidate;
-    var modal = document.getElementById('confirmModal');
-    var nameEl = document.getElementById('confirmName');
-    var symbolEl = document.getElementById('confirmSymbol');
-    var display = document.getElementById('confirmSymbolDisplay');
+    const modal = document.getElementById('confirmModal');
+    const nameEl = document.getElementById('confirmName');
+    const symbolEl = document.getElementById('confirmSymbol');
+    const display = document.getElementById('confirmSymbolDisplay');
 
     if (candidate === 'aga') {
       nameEl.textContent = 'AGA MUSHAHID';
       symbolEl.textContent = 'THE MOUNTAIN';
       display.innerHTML =
         '<svg viewBox="0 0 200 200" width="140" height="140" class="mx-auto">' +
-        '<defs>' +
-        '<linearGradient id="mGrad2" x1="0%" y1="0%" x2="0%" y2="100%">' +
-        '<stop offset="0%" stop-color="#e8c87a"/><stop offset="100%" stop-color="#6b5430"/>' +
-        '</linearGradient>' +
-        '<linearGradient id="snow2" x1="0%" y1="0%" x2="0%" y2="100%">' +
-        '<stop offset="0%" stop-color="#f5f0e6"/><stop offset="100%" stop-color="#c9a961"/>' +
-        '</linearGradient>' +
-        '</defs>' +
+        '<defs><linearGradient id="mGrad2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e8c87a"/><stop offset="100%" stop-color="#6b5430"/></linearGradient><linearGradient id="snow2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f5f0e6"/><stop offset="100%" stop-color="#c9a961"/></linearGradient></defs>' +
         '<path d="M 5 175 L 80 45 L 115 105 L 145 65 L 195 175 Z" fill="url(#mGrad2)"/>' +
         '<path d="M 80 45 L 95 70 L 80 70 L 72 78 L 65 70 Z" fill="url(#snow2)"/>' +
         '<path d="M 145 65 L 158 88 L 145 88 L 132 88 Z" fill="url(#snow2)"/>' +
@@ -766,11 +583,7 @@
       symbolEl.textContent = 'THE ARROW';
       display.innerHTML =
         '<svg viewBox="0 0 200 200" width="140" height="140" class="mx-auto">' +
-        '<defs>' +
-        '<linearGradient id="aGrad2" x1="0%" y1="0%" x2="100%" y2="0%">' +
-        '<stop offset="0%" stop-color="#6b5430"/><stop offset="100%" stop-color="#e8c87a"/>' +
-        '</linearGradient>' +
-        '</defs>' +
+        '<defs><linearGradient id="aGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6b5430"/><stop offset="100%" stop-color="#e8c87a"/></linearGradient></defs>' +
         '<rect x="25" y="96" width="135" height="8" fill="url(#aGrad2)"/>' +
         '<path d="M 160 75 L 195 100 L 160 125 Z" fill="url(#aGrad2)"/>' +
         '<path d="M 25 100 L 5 75 L 15 100 L 5 125 Z" fill="url(#aGrad2)"/>' +
@@ -784,80 +597,88 @@
     pendingVote = null;
   }
 
+  // Increment vote in Firestore
   async function castVote() {
     if (!pendingVote) return;
-    var choice = pendingVote;
+    const choice = pendingVote;
     pendingVote = null;
 
     document.getElementById('confirmModal').classList.remove('active');
 
-    // Cinematic flash
-    var flash = document.getElementById('flash');
+    const flash = document.getElementById('flash');
     flash.classList.remove('flash');
     void flash.offsetWidth;
     flash.classList.add('flash');
-    setTimeout(function() { flash.classList.remove('flash'); }, 1000);
+    setTimeout(() => { flash.classList.remove('flash'); }, 1000);
 
-    // Lock UI immediately
-    markVoted(choice);
-    updateVoteUI();
+    try {
+      // Update real-time Firestore database using atomic increment
+      await updateDoc(votesDocRef, {
+        [choice]: increment(1)
+      });
 
-    var candidateName = choice === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
-    showToast('VOTE CAST FOR ' + candidateName);
+      markVoted(choice);
+      updateVoteUI();
 
-    // Send to Global API
-    await castVoteAPI(choice);
-    
-    // If admin is viewing the tally, sync it immediately
-    if (document.getElementById('resultsSection').style.display === 'block') {
-      await syncVotes();
+      const candidateName = choice === 'aga' ? 'AGA MUSHAHID' : 'MUHAMMAD ALI';
+      showToast('VOTE CAST FOR ' + candidateName);
+
+      setTimeout(() => { showResults(); }, 1400);
+    } catch (e) {
+      console.error("Error writing vote to Firebase:", e);
+      showToast("FAILED TO RECORD VOTE. TRY AGAIN.");
     }
   }
 
-  // ===== Admin Sync & Results =====
-  async function syncVotes() {
-    var votes = await getVotes();
-    updateTallyUI(votes);
-    updateResultsMessage(votes);
+  // Decrement vote in Firestore
+  async function resetVote() {
+    const myVote = getMyVote();
+    if (!myVote) {
+      showToast('NO VOTE TO RESET');
+      return;
+    }
+
+    try {
+      await updateDoc(votesDocRef, {
+        [myVote]: increment(-1)
+      });
+
+      clearMyVote();
+      updateVoteUI();
+      showToast('VOTE RESET — YOU MAY VOTE AGAIN');
+      setTimeout(() => { showResults(); }, 600);
+    } catch (e) {
+      console.error("Error resetting vote on Firebase:", e);
+      showToast("FAILED TO RESET VOTE.");
+    }
   }
 
+  // Visual Counter animation
   function animateCounter(id, target) {
-    if (counterAnimations[id]) cancelAnimationFrame(counterAnimations[id]);
-    var el = document.getElementById(id);
+    const el = document.getElementById(id);
     if (!el) return;
-    var start = parseInt(el.textContent) || 0;
-    
-    if (start !== target) {
-      el.classList.remove('stat-flash');
-      void el.offsetWidth;
-      el.classList.add('stat-flash');
-    }
-    
-    var duration = 800;
-    var startTime = performance.now();
+    const duration = 1200;
+    const startTime = performance.now();
     function update(now) {
-      var elapsed = now - startTime;
-      var progress = Math.min(elapsed / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(start + (target - start) * eased);
-      if (progress < 1) {
-        counterAnimations[id] = requestAnimationFrame(update);
-      } else {
-        el.textContent = target;
-        delete counterAnimations[id];
-      }
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(eased * target);
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = target;
     }
-    counterAnimations[id] = requestAnimationFrame(update);
+    requestAnimationFrame(update);
   }
 
-  function updateTallyUI(votes) {
-    var total = (votes.aga || 0) + (votes.ali || 0);
+  function updateResultsDisplay(votes) {
+    const total = (votes.aga || 0) + (votes.ali || 0);
+
     animateCounter('totalVotes', total);
     animateCounter('agaCount', votes.aga || 0);
     animateCounter('aliCount', votes.ali || 0);
 
-    var agaPercent = total > 0 ? (votes.aga / total * 100) : 0;
-    var aliPercent = total > 0 ? (votes.ali / total * 100) : 0;
+    const agaPercent = total > 0 ? (votes.aga / total * 100) : 0;
+    const aliPercent = total > 0 ? (votes.ali / total * 100) : 0;
 
     document.getElementById('agaPercent').textContent = agaPercent.toFixed(1) + '%';
     document.getElementById('aliPercent').textContent = aliPercent.toFixed(1) + '%';
@@ -865,8 +686,8 @@
     document.getElementById('agaBar').style.width = agaPercent + '%';
     document.getElementById('aliBar').style.width = aliPercent + '%';
 
-    var agaBadge = document.getElementById('agaWinner');
-    var aliBadge = document.getElementById('aliWinner');
+    const agaBadge = document.getElementById('agaWinner');
+    const aliBadge = document.getElementById('aliWinner');
     agaBadge.style.display = 'none';
     aliBadge.style.display = 'none';
 
@@ -884,108 +705,122 @@
         aliBadge.style.display = 'inline-block';
       }
     }
-  }
 
-  function updateResultsMessage(votes) {
-    var total = (votes.aga || 0) + (votes.ali || 0);
-    var msg = document.getElementById('resultsMessage');
+    const msg = document.getElementById('resultsMessage');
     if (total === 0) {
       msg.textContent = 'The tally awaits the first voice.';
     } else if (votes.aga > votes.ali) {
-      var diff = votes.aga - votes.ali;
+      const diff = votes.aga - votes.ali;
       msg.textContent = 'The Mountain stands tall — Aga Mushahid leads by ' + diff + ' vote' + (diff !== 1 ? 's' : '') + '.';
     } else if (votes.ali > votes.aga) {
-      var diff2 = votes.ali - votes.aga;
+      const diff2 = votes.ali - votes.aga;
       msg.textContent = 'The Arrow flies true — Muhammad Ali leads by ' + diff2 + ' vote' + (diff2 !== 1 ? 's' : '') + '.';
     } else {
       msg.textContent = 'A perfect equilibrium. The realm is divided equally.';
     }
   }
 
-  function openAdmin() {
-    document.getElementById('adminModal').classList.add('active');
-    setTimeout(() => document.getElementById('adminPass').focus(), 100);
+  function showResults() {
+    const section = document.getElementById('resultsSection');
+    section.style.display = 'block';
+    updateResultsDisplay(liveVotes);
+    setTimeout(() => {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
-  function closeAdmin() {
-    document.getElementById('adminModal').classList.remove('active');
-    document.getElementById('adminPass').value = '';
+  // Toast System
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3500);
   }
 
-  function adminLogin() {
-    var pass = document.getElementById('adminPass').value;
-    if (pass === 'admin123') {
-      closeAdmin();
-      showToast('ACCESS GRANTED');
-      var section = document.getElementById('resultsSection');
-      section.style.display = 'block';
-      setTimeout(function() {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 200);
-      
-      // Start polling for live updates every 3 seconds
-      clearInterval(pollingInterval);
-      pollingInterval = setInterval(syncVotes, 3000);
-      syncVotes(); // immediate sync
-    } else {
-      showToast('ACCESS DENIED');
-      document.getElementById('adminPass').value = '';
+  // Particle System
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', () => { resizeCanvas(); createParticles(); });
+
+  function createParticles() {
+    particles = [];
+    const count = Math.floor((window.innerWidth * window.innerHeight) / 18000);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1.6 + 0.2,
+        speedY: -Math.random() * 0.25 - 0.05,
+        speedX: (Math.random() - 0.5) * 0.15,
+        opacity: Math.random() * 0.5 + 0.1,
+        twinkle: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 0.03 + 0.01
+      });
     }
   }
+  createParticles();
 
-  // ===== Reset Vote =====
-  async function resetVote() {
-    var myVote = getMyVote();
-    if (!myVote) {
-      showToast('NO VOTE TO RESET');
-      return;
-    }
-    
-    showToast('RESETTING VOTE...');
-    await decrementVoteAPI(myVote);
-    
-    clearMyVote();
-    updateVoteUI();
-    showToast('VOTE RESET — YOU MAY VOTE AGAIN');
-    
-    if (document.getElementById('resultsSection').style.display === 'block') {
-      await syncVotes();
-    }
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.y += p.speedY; p.x += p.speedX; p.twinkle += p.twinkleSpeed;
+      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      const op = p.opacity * (0.4 + 0.6 * Math.sin(p.twinkle));
+      ctx.fillStyle = 'rgba(201, 169, 97, ' + op + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    requestAnimationFrame(animateParticles);
   }
+  animateParticles();
 
-  // ===== Event Listeners =====
-  document.getElementById('voteBtnAga').addEventListener('click', function() { openConfirm('aga'); });
-  document.getElementById('voteBtnAli').addEventListener('click', function() { openConfirm('ali'); });
+  // Scroll Animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('in');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  setTimeout(() => { document.getElementById('seal').classList.add('in'); }, 200);
+  setTimeout(() => {
+    document.getElementById('decree').classList.add('in');
+    document.getElementById('intro').classList.add('in');
+  }, 1500);
+
+  // Attach Event Listeners
+  document.getElementById('voteBtnAga').addEventListener('click', () => openConfirm('aga'));
+  document.getElementById('voteBtnAli').addEventListener('click', () => openConfirm('ali'));
   document.getElementById('cancelVoteBtn').addEventListener('click', closeConfirm);
   document.getElementById('confirmVoteBtn').addEventListener('click', castVote);
+  document.getElementById('resultsBtn').addEventListener('click', showResults);
   document.getElementById('resetVoteBtn').addEventListener('click', resetVote);
-  document.getElementById('resetGlobalBtn').addEventListener('click', resetVote);
-  
-  document.getElementById('adminBtn').addEventListener('click', openAdmin);
-  document.getElementById('cancelAdminBtn').addEventListener('click', closeAdmin);
-  document.getElementById('loginAdminBtn').addEventListener('click', adminLogin);
-  document.getElementById('adminPass').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') adminLogin();
-  });
 
-  document.getElementById('confirmModal').addEventListener('click', function(e) {
+  document.getElementById('confirmModal').addEventListener('click', (e) => {
     if (e.target.id === 'confirmModal') closeConfirm();
   });
-  document.getElementById('adminModal').addEventListener('click', function(e) {
-    if (e.target.id === 'adminModal') closeAdmin();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeConfirm();
   });
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeConfirm();
-      closeAdmin();
-    }
-  });
-
-  // ===== Initialize on load =====
+  // Startup Setup
   updateVoteUI();
-  console.log('High Court 14 voting system initialized.');
-})();
+  if (getMyVote()) {
+    setTimeout(() => { showResults(); }, 2000);
+  }
 </script>
 </body>
 </html>
